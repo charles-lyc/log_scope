@@ -34,9 +34,13 @@ private slots:
 
     void on_actionCurve_toggled(bool arg1);
 
-    void on_actionOpen_triggered(bool checked);
+    void on_actionOpen_triggered();
 
     void on_actionSave_layout_triggered();
+
+    void on_dialData_valueChanged(int value);
+
+    void on_dialVideo_valueChanged(int value);
 
 private:
     Ui::MainWindow *ui;

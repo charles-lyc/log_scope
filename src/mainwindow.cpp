@@ -91,8 +91,6 @@ MainWindow::MainWindow(QWidget *parent)
     tableView->setModel(model);
     tableView->show();
 
-
-
 }
 
 MainWindow::~MainWindow()
@@ -163,7 +161,27 @@ void MainWindow::on_actionCurve_toggled(bool arg1)
 
 }
 
-void MainWindow::on_actionOpen_triggered(bool checked)
+void MainWindow::on_actionSave_layout_triggered()
+{
+    QSettings settings;
+    settings.setValue("DOCK_LOCATIONS",this->saveState());
+
+}
+
+void MainWindow::on_dialVideo_valueChanged(int value)
+{
+    ui->labelSpinVideo->setText("Video start time adjust:\n" + QString::number(value) + "ms\n" + "(" + QString::number(value / 60000) + "min)");
+
+    player->setPosition(value);
+}
+
+void MainWindow::on_dialData_valueChanged(int value)
+{
+    ui->labelSpinData->setText("Video start time adjust:\n" + QString::number(value) + "ms\n" + "(" + QString::number(value / 60000) + "min)");
+
+}
+
+void MainWindow::on_actionOpen_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(
                     this, tr("open image file"),
@@ -175,11 +193,4 @@ void MainWindow::on_actionOpen_triggered(bool checked)
     file.open(QIODevice::ReadOnly);
     fileRawData = file.readAll();
     file.close();
-}
-
-void MainWindow::on_actionSave_layout_triggered()
-{
-    QSettings settings;
-    settings.setValue("DOCK_LOCATIONS",this->saveState());
-
 }
