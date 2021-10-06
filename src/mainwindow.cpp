@@ -12,11 +12,13 @@ MainWindow::MainWindow(QWidget *parent)
     QSettings settings;
     this->restoreState(settings.value("DOCK_LOCATIONS").toByteArray());
 
+
 //    connect(ui->menubar, SIGNAL(triggered(QAction*)), this, SLOT(handleAction(QAction*)), Qt::UniqueConnection);
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(on_actionOpen_triggered()), Qt::UniqueConnection);
     connect(ui->actionVideo,SIGNAL(toggled(bool)),this,SLOT(on_actionVideo_toggled(bool)), Qt::UniqueConnection);
     connect(ui->actionCurve,SIGNAL(toggled(bool)),this,SLOT(on_actionLog_toggled(bool)), Qt::UniqueConnection);
     connect(ui->actionLog,SIGNAL(toggled(bool)),this,SLOT(on_actionCurve_toggled(bool)), Qt::UniqueConnection);
+
 
 
     // 把MainWindow的中间窗口去除，这时整个MainWindow只有Dock组成
@@ -46,11 +48,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->plotWidget->replot();
 #endif
 
+
     player = new VideoPlayer();
     ui->video_dockWidget->setWidget(player);
     const QRect availableGeometry = QApplication::desktop()->availableGeometry(player);
     player->resize(availableGeometry.width() / 6, availableGeometry.height() / 4);
     player->show();
+
 
     QLineSeries *series = new QLineSeries();
     for (int i = 0; i < 500; i++) {
@@ -60,13 +64,23 @@ MainWindow::MainWindow(QWidget *parent)
     }
     chart = new Chart();
     chart->addSeries(series);
+    series = new QLineSeries();
+    for (int i = 0; i < 500; i++) {
+        QPointF p((qreal) i, qSin(M_PI / 50 * i) * 50);
+        p.ry() += QRandomGenerator::global()->bounded(20);
+        *series << p;
+    }
+    chart->addSeries(series);
     chart->setTitle("Zoom in/out example");
-    chart->setAnimationOptions(QChart::SeriesAnimations);
+//    chart->setAnimationOptions(QChart::SeriesAnimations);
     chart->legend()->hide();
     chart->createDefaultAxes();
-    ChartView *chartView = new ChartView(chart);
+    chartView = new ChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing);
-    ui->curve_dockWidget->setWidget(chartView);
+    // ui->curve_dockWidget->setWidget(chartView);
+    ui->horizontalLayoutCurve->addWidget(chartView);
+//    chartView->setRange(0, 10000);
+//    chartView->setRange(-5, 10);
 
 
     QTableView *tableView = new QTableView;
@@ -91,12 +105,38 @@ MainWindow::MainWindow(QWidget *parent)
     tableView->setModel(model);
     tableView->show();
 
+
+    timerID = startTimer(1);
+    timelineSeries = new QLineSeries();
+    chart->addSeries(timelineSeries);
+    timelineSeries->append(0, 0);
+    timelineSeries->append(0, 100);
+
+    timelineSeries->clear();
+    timelineSeries->append(tick, 0);
+    timelineSeries->append(tick, 1000);
+    timelineSeries->append(1, 0);
+    timelineSeries->append(1, 1000);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::timerEvent(QTimerEvent * event)
+{
+//    if(event->timerId() == timerID)
+//    {
+//        tick++;
+//        qDebug("Tick %d.\n", tick);
+
+//        timelineSeries->clear();
+//        timelineSeries->append(tick, 0);
+//        timelineSeries->append(tick, 1000);
+//    }
+}
+
 
 #if 0
 void MainWindow::video_dockWiget_Init(void)
@@ -173,11 +213,13 @@ void MainWindow::on_dialVideo_valueChanged(int value)
     ui->labelSpinVideo->setText("Video start time adjust:\n" + QString::number(value) + "ms\n" + "(" + QString::number(value / 60000) + "min)");
 
     player->setPosition(value);
+
 }
 
 void MainWindow::on_dialData_valueChanged(int value)
 {
     ui->labelSpinData->setText("Video start time adjust:\n" + QString::number(value) + "ms\n" + "(" + QString::number(value / 60000) + "min)");
+
 
 }
 
@@ -187,10 +229,36 @@ void MainWindow::on_actionOpen_triggered()
                     this, tr("open image file"),
                     "./", tr("Image files(*.bmp *.jpg *.pbm *.pgm *.png *.ppm *.xbm *.xpm);;All files (*.*)"));
 
+
+    // TODO: create a thread
     if (fileName.isEmpty())
         return;
     QFile file(fileName);
     file.open(QIODevice::ReadOnly);
     fileRawData = file.readAll();
     file.close();
+    qDebug("File stream size: %d.\n", fileRawData.size());
+
+    Package pack;
+    Frame_t frame;
+    for (int n = 0; n < fileRawData.size(); n++)
+    {
+        char c = char(fileRawData.at(n));
+        if (pack.Parse(&frame, c))
+        {
+            frames << frame;
+        }
+    }
+}
+
+void MainWindow::on_pushButtonLock_clicked()
+{
+    videoStart = ui->dialVideo->value();
+    dataStart = ui->dialData->value();
+}
+
+
+void MainWindow::on_pushButtonPlay_clicked()
+{
+//    timer->start();
 }

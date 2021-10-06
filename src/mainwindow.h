@@ -14,6 +14,9 @@
 #include "chart/chartview.h"
 #include "video/videoplayer.h"
 #include "plot/qcustomplot.h"
+#include <QTimerEvent>
+#include "protocal/package.h"
+#include "protocal/frame.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -41,6 +44,9 @@ private slots:
     void on_dialData_valueChanged(int value);
 
     void on_dialVideo_valueChanged(int value);
+    void on_pushButtonLock_clicked();
+
+    void on_pushButtonPlay_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -51,11 +57,22 @@ private:
 
     QByteArray fileRawData;
     Chart *chart=nullptr;
+    ChartView *chartView;
+
+    int videoStart;
+    int dataStart;
+    int dataStartBase;
+
+    int timerID;
+    QLineSeries *timelineSeries;
+    int tick = 0;
+
+    QVector<Frame_t> frames;
 
 private:
     void video_dockWiget_Init(void);
     void video_dockWiget_Close(void);
-
+    void timerEvent(QTimerEvent * event);
 
 
 };

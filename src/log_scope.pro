@@ -14,6 +14,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     plot/qcustomplot.cpp \
+    protocal/package.cpp \
     video/videoplayer.cpp \
 
 HEADERS += \
@@ -21,6 +22,8 @@ HEADERS += \
     chart/chartview.h \
     mainwindow.h \
     plot/qcustomplot.h \
+    protocal/frame.h \
+    protocal/package.h \
     video/videoplayer.h \
 
 FORMS += \
